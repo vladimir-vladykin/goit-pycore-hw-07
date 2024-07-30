@@ -6,15 +6,18 @@ from errors_helper import input_error
 SUPPORTED_COMMANDS_INFO = """
 Supported list of commands:
 hello -> just says hi!
-add 'name' 'phone' -> saves phone number by name
-change 'name' 'phone' -> edits phone number by name
-phone 'name' -> outputs saved phone number for this name
-all -> output all saved contacts
-close -> finish assistant
-exit -> finish assistant
-info -> information about supported commands
+add 'name' 'phone' -> create contact. Note that phone should be exactly 10 symbols long.
+change 'name' 'old phone' 'new phone' -> edits phone number of contact.
+phone 'name' -> outputs saved phone numbers of contacts.
+add-birthday 'name' 'birthday' -> saves birthday for user, in 'DD.MM.YYYY' format.
+show-birthday 'name' -> outputs birthday of user.
+birthdays -> output all upcoming birthdays.
+all -> output all saved contacts.
+close -> finish assistant.
+exit -> finish assistant.
+info -> information about supported commands.
 
-Make sure you follow the format of commands, and avoid spaces in phone numbers, as they are not supported."""
+Make sure you follow the format of commands, and avoid spaces and plus in phone numbers, as they are not supported."""
 
 @input_error # use @input_error even for main() function to completely get rid of try/except here
 def main():
@@ -22,10 +25,10 @@ def main():
     print("Welcome to the assistant bot!")
     print(format_info())
     
-    # waits for user's commands forever, untill terminal command is occurred
-    contacts = {}
+    # this is where our contacts lives
     address_book = AddressBook()
 
+    # waits for user's commands forever, untill terminal command is occurred
     while True:
         user_input = input("Enter a command: ")
 
@@ -43,6 +46,12 @@ def main():
             print(change_contact(args, address_book))
         elif command == "phone":
             print(find_numbers_by_name(args, address_book))
+        elif command == "add-birthday":
+            print(add_birthday(args, address_book))
+        elif command == "show-birthday":
+            print(show_birthday(args, address_book))
+        elif command == "birthdays":
+            print(birthdays(args, address_book))
         elif command == "all":
             print(output_all_contacts(address_book))
         elif command == "info":
@@ -82,18 +91,36 @@ def find_numbers_by_name(args, address_book: AddressBook):
     phones = address_book.find_phones(name)
     return f"Phone numbers of {name}:\n {phones}."
 
-    
+
+# TODO update for new format 
 @input_error
 def change_contact(args, address_book: AddressBook):
     name, phone = args
 
-    # FIXME is that right? do have to support change at all? we have multiple phone numbers now
+    # FIXME is that right? do have to support change at all? we have multiple phone numbers now -> user have to mention both numbers
     contact_record = address_book.find(name)
     if contact_record is not None:
         contact_record.add_phone(phone)
         return "Contact changed."
     
     return "Contact changed."
+
+@input_error
+def add_birthday(args, address_book: AddressBook):
+    name, birthday = args
+
+    record = address_book.find(name)
+    record.add_birthday(birthday)
+
+    return f"Birthday added for {name}"
+
+@input_error
+def show_birthday(args, address_book: AddressBook):
+    pass
+
+@input_error
+def birthdays(args, address_book: AddressBook):
+    pass
 
 
 @input_error

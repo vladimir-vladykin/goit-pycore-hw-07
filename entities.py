@@ -57,11 +57,11 @@ class Phone(Field):
     
 
 class Birthday(Field):
-    raw_date_pattern = "%d-%m-%Y"
+    raw_date_pattern = "%d.%m.%Y"
 
     def __init__(self, value: str):
         try:
-            date = datetime.strptime(value, Birthday.raw_date_pattern).date()
+            super().__init__(datetime.strptime(value, Birthday.raw_date_pattern).date())
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
         
@@ -74,7 +74,7 @@ class Record:
         self.birthday = None
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"Contact name: {self.name.value}, birthday: {self.birthday}, phones: {'; '.join(p.value for p in self.phones)}"
     
     # hack for print list of Records easily
     def __repr__(self):
@@ -117,7 +117,7 @@ class AddressBook(UserDict):
         self.data[record.name.value] = record
     
     def find(self, name: str) -> Record:
-        return self.data.get(name)
+        return self.data[name]
     
     def delete(self, name: str):
         if name not in self.data:

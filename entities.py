@@ -57,16 +57,19 @@ class Phone(Field):
     
 
 class Birthday(Field):
-    raw_date_pattern = "%d.%m.%Y"
+    RAW_DATE_PATTERN = "%d.%m.%Y"
 
     def __init__(self, value: str):
         try:
-            super().__init__(datetime.strptime(value, Birthday.raw_date_pattern).date())
+            super().__init__(datetime.strptime(value, Birthday.RAW_DATE_PATTERN).date())
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
         
+    def __str__(self):
+        return date.strftime(self.value, Birthday.RAW_DATE_PATTERN)
+        
 
-# One Record corresponds to single user, contains name and can contain some phone numbers
+# One Record corresponds to single user, contains name and can contain some phone numbers and birthday
 class Record:
     def __init__(self, name):
         self.name = Name(name)
@@ -141,11 +144,11 @@ class AddressBook(UserDict):
         upcoming_birthdays_result = []
 
         # iterate throudg users to find out who has upcoming birthday
-        for record in self.data.values():
+        for record in self.all_records():
 
             # parse user's birthdate
             # birthday_date = datetime.strptime(user[birthday_key], date_pattern).date()
-            birthday_date = record.birthday
+            birthday_date = record.birthday.value
             
             # figure out date of celebration this year 
             birthday_month = birthday_date.month

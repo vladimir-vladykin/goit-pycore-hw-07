@@ -70,6 +70,7 @@ def parse_input(user_input):
 def add_contact(args, address_book: AddressBook):
     name, phone = args
 
+    # TODO update and make like in lesson?
     new_contact = Record(name)
     new_contact.add_phone(phone)
     address_book.add_record(new_contact)
@@ -116,11 +117,28 @@ def add_birthday(args, address_book: AddressBook):
 
 @input_error
 def show_birthday(args, address_book: AddressBook):
-    pass
+    name = args[0]
+    user = address_book.find(name)
+    birthday = user.birthday
+    
+    if birthday is not None:
+        return f"Birthday of {name}'s is {birthday}"
+    else:
+        return f"No birthday added for user {name}"
 
 @input_error
 def birthdays(args, address_book: AddressBook):
-    pass
+    upcoming_birthdays = address_book.get_upcoming_birthdays()
+
+    result = ""
+    if upcoming_birthdays:
+        result += "Upcoming birthdays:\n"
+        for birthday_item in upcoming_birthdays:
+            result += f"{birthday_item[user_key].name}: {birthday_item[congratulation_date_key]}\n"
+    else:
+        result += "No upcoming birthdays for now."
+
+    return result
 
 
 @input_error

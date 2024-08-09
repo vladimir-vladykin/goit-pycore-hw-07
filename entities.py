@@ -1,15 +1,14 @@
 from collections import UserDict
 from datetime import datetime, date, timedelta
 
-# TODO small clean up?
 PHONE_LENGTH = 10
-user_key = "user"
-birthday_key = "birthday"
-congratulation_date_key = "congratulation_date"
-date_pattern = "%Y.%m.%d"
-days_of_upcoming_range = 7
-iso_saturday = 6
-iso_sunday = 7
+USER_KEY = "user"
+BIRTHDAY_KEY = "birthday"
+CONGRATULATION_DATE_KEY = "congratulation_date"
+DATE_PATTERN = "%Y.%m.%d"
+DAYS_OF_UPCOMING_RANGE = 7
+ISO_SATURDAY = 6
+ISO_SUNDAY = 7
 
 
 # Base class for fields in Records.
@@ -93,11 +92,8 @@ class Record:
     def edit_phone(self, phone: str, new_phone: str):
         # since Phone implements __eq__(), it's easy to work with list of Phones
         phone_object = Phone(phone)
-        if phone_object not in self.phones:
-            # we don't have such phone, therefore it's cannot be edited
-            return
         
-        # replace old phone object with new one
+        # replace old phone object with new one (IndexError if not existing phone)
         existing_phone_index = self.phones.index(phone_object)
         self.phones[existing_phone_index] = Phone(new_phone)
         
@@ -167,22 +163,21 @@ class AddressBook(UserDict):
             
             # we have to move congrats date if it's on weekend
             congrats_day_of_week = congrats_date.isoweekday()
-            is_congrats_date_in_weekend = congrats_day_of_week >= iso_saturday
+            is_congrats_date_in_weekend = congrats_day_of_week >= ISO_SATURDAY
             if is_congrats_date_in_weekend:
                 # we will add one day is this is Sunday, and two if this is Saturday
-                days_factor = 1 if congrats_day_of_week == iso_sunday else 2
+                days_factor = 1 if congrats_day_of_week == ISO_SUNDAY else 2
                 congrats_date = congrats_date + timedelta(days=days_factor)
-
 
             
             # we now have final congrats date, now let's figure out should we 
             # include it in upcoming list
 
-            if (congrats_date.toordinal() - current_date.toordinal()) <= days_of_upcoming_range:
+            if (congrats_date.toordinal() - current_date.toordinal()) <= DAYS_OF_UPCOMING_RANGE:
                 upcoming_birthdays_result.append(
                     {
-                        user_key: record, 
-                        congratulation_date_key: datetime.strftime(congrats_date, date_pattern)
+                        USER_KEY: record, 
+                        CONGRATULATION_DATE_KEY: datetime.strftime(congrats_date, DATE_PATTERN)
                     }
                 )
             # otherwise congrats date is not soon enough, so we do not consider it's as upcoming for now

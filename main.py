@@ -68,13 +68,15 @@ def parse_input(user_input):
 
 @input_error
 def add_contact(args, address_book: AddressBook):
-    name, phone = args
+    name, phone, *_ = args
 
-    # TODO update and make like in lesson?
+    if name in address_book:
+        return "Contact already exists. You should \'change\' it instead of \'add\'"
+
     new_contact = Record(name)
     new_contact.add_phone(phone)
-    address_book.add_record(new_contact)
 
+    address_book.add_record(new_contact)
     return "Contact added."
 
 
@@ -93,22 +95,20 @@ def find_numbers_by_name(args, address_book: AddressBook):
     return f"Phone numbers of {name}:\n {phones}."
 
 
-# TODO update for new format 
 @input_error
 def change_contact(args, address_book: AddressBook):
-    name, phone = args
+    name, old_phone, new_phone, *_  = args
 
-    # FIXME is that right? do have to support change at all? we have multiple phone numbers now -> user have to mention both numbers
-    contact_record = address_book.find(name)
-    if contact_record is not None:
-        contact_record.add_phone(phone)
+    if name in address_book: 
+        contact_record = address_book.find(name)
+        contact_record.edit_phone(old_phone, new_phone)
         return "Contact changed."
     
-    return "Contact changed."
+    return "Contact not found."
 
 @input_error
 def add_birthday(args, address_book: AddressBook):
-    name, birthday = args
+    name, birthday, *_ = args
 
     record = address_book.find(name)
     record.add_birthday(birthday)
@@ -134,7 +134,7 @@ def birthdays(args, address_book: AddressBook):
     if upcoming_birthdays:
         result += "Upcoming birthdays:\n"
         for birthday_item in upcoming_birthdays:
-            result += f"{birthday_item[user_key].name}: {birthday_item[congratulation_date_key]}\n"
+            result += f"{birthday_item[USER_KEY].name}: {birthday_item[CONGRATULATION_DATE_KEY]}\n"
     else:
         result += "No upcoming birthdays for now."
 

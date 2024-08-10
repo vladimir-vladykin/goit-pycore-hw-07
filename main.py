@@ -70,13 +70,14 @@ def parse_input(user_input):
 def add_contact(args, address_book: AddressBook):
     name, phone, *_ = args
 
-    if name in address_book:
-        return "Contact already exists. You should \'change\' it instead of \'add\'"
+    contact = address_book.find(name)
+    result_message = "Contact updated."
+    if contact is None:
+        contact = Record(name)
+        address_book.add_record(contact)
+        result_message = "Contact added."
 
-    new_contact = Record(name)
-    new_contact.add_phone(phone)
-
-    address_book.add_record(new_contact)
+    contact.add_phone(phone)
     return "Contact added."
 
 

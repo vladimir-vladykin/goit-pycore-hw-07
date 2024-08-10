@@ -70,15 +70,18 @@ def parse_input(user_input):
 def add_contact(args, address_book: AddressBook):
     name, phone, *_ = args
 
-    contact = address_book.find(name)
-    result_message = "Contact updated."
-    if contact is None:
+    contact = None
+    result_message = None
+    if name in address_book.data:
+        contact = address_book.find(name)
+        result_message = "Contact updated."
+    else:
         contact = Record(name)
         address_book.add_record(contact)
         result_message = "Contact added."
 
     contact.add_phone(phone)
-    return "Contact added."
+    return result_message
 
 
 @input_error
@@ -100,12 +103,9 @@ def find_numbers_by_name(args, address_book: AddressBook):
 def change_contact(args, address_book: AddressBook):
     name, old_phone, new_phone, *_  = args
 
-    if name in address_book: 
-        contact_record = address_book.find(name)
-        contact_record.edit_phone(old_phone, new_phone)
-        return "Contact changed."
-    
-    return "Contact not found."
+    contact_record = address_book.find(name)
+    contact_record.edit_phone(old_phone, new_phone)
+    return "Contact changed."
 
 @input_error
 def add_birthday(args, address_book: AddressBook):

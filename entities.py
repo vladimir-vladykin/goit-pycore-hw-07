@@ -1,5 +1,6 @@
 from collections import UserDict
 from datetime import datetime, date, timedelta
+from errors_helper import NoRecordError, InvalidPhoneNumberFormatError, InvalidBirthdayFormatError, NoPhoneError
 
 PHONE_LENGTH = 10
 USER_KEY = "user"
@@ -43,10 +44,10 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value: str):
         if len(value) != PHONE_LENGTH:
-            raise ValueError(f"Phone length is not correct, it supposed to have {PHONE_LENGTH} symbols")
+            raise InvalidPhoneNumberFormatError(f"Phone length is not correct, it supposed to have {PHONE_LENGTH} symbols")
         
         if not value.isdigit():
-            raise ValueError("Phone number is supposed to contain only digits")
+            raise InvalidPhoneNumberFormatError("Phone number is supposed to contain only digits")
 
         super().__init__(value)
 
@@ -62,7 +63,7 @@ class Birthday(Field):
         try:
             super().__init__(datetime.strptime(value, Birthday.RAW_DATE_PATTERN).date())
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise InvalidBirthdayFormatError("Invalid date format. Use DD.MM.YYYY")
         
     def __str__(self):
         return date.strftime(self.value, Birthday.RAW_DATE_PATTERN)
@@ -93,8 +94,11 @@ class Record:
         # since Phone implements __eq__(), it's easy to work with list of Phones
         phone_object = Phone(phone)
         
-        # replace old phone object with new one (IndexError if not existing phone)
+        # replace old phone object with new one
         existing_phone_index = self.phones.index(phone_object)
+        if existing_phone_index < 0:
+            raise NoPhoneError
+        
         self.phones[existing_phone_index] = Phone(new_phone)
         
 
@@ -115,13 +119,16 @@ class AddressBook(UserDict):
     def add_record(self, record: Record):
         self.data[record.name.value] = record
     
+    # use this method when you expect that user alredy added in book
     def find(self, name: str) -> Record:
+        if name not in self.data:
+            raise NoRecordError()
+        
         return self.data.get(name)
     
     def delete(self, name: str):
         if name not in self.data:
-            # unknown name, nothing to remove
-            return 
+            raise NoRecordError()
         
         self.data.pop(name)
 
@@ -129,7 +136,7 @@ class AddressBook(UserDict):
         return list(self.data.values())
     
     def find_phones(self, name: str) -> list[Record]:
-        return self.data[name].phones
+        return self.find(name).phones
 
     # Returns list of user's records, which has upcoming birthday
     def get_upcoming_birthdays(self) -> list:
@@ -143,8 +150,12 @@ class AddressBook(UserDict):
         for record in self.all_records():
 
             # parse user's birthdate
-            # birthday_date = datetime.strptime(user[birthday_key], date_pattern).date()
-            birthday_date = record.birthday.value
+            birthday = record.birthday
+            if birthday is None:
+                # seems it's a user with no birthday added
+                continue
+
+            birthday_date = birthday.value
             
             # figure out date of celebration this year 
             birthday_month = birthday_date.month
